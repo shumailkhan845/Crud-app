@@ -1,24 +1,64 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from "react";
+import axios from 'axios';
+import { sendTask_API, getTask_API, deleteTask_API } from "./API_Route";
 
 function App() {
+
+  //Submitting tasks to backend
+  const SubmitForm = () =>{   
+      axios.post(sendTask_API,
+        tasks
+      )
+    }
+
+//Use state to the input 
+const [tasks, setTasks] = useState({
+    task: "",
+  });
+const handleChange = (event) => {
+  setTasks({ ...tasks, [event.target.name]: event.target.value });
+  };
+    
+  //Getting tasks from backend
+const [getTask, setGetTask]=useState([]);
+  useEffect(()=>{
+    axios.get(getTask_API).then((response)=>{
+      setGetTask(response.data)
+    }).catch((error)=>{
+      console.log(error)
+    })
+  },[])
+
+//Deleting a task
+const deleteTask = (id) =>{
+  axios.delete(`${deleteTask_API}/${id}`).then(response=>
+    console.log(response.data),
+    setGetTask(prevTask=> prevTask.filter(task=>task._id!==id))
+    
+  ).catch(
+    error => console.log("Error while deleting task ",error)
+  )
+}
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+    <h1>CRUD app in Mern</h1>
+    <form onSubmit={SubmitForm} >
+      <input type="text" placeholder="Enter your tasks" name="task" onChange={handleChange}/>
+      <button type="submit">create</button>
+    </form>
+
+    <h3>My tasks</h3>
+    {
+      getTask.map((task)=>(
+        <div key={task.id}>
+
+          <p>{task.task}</p>
+          <button onClick={(e)=>{deleteTask(task._id)}}>Delete</button>
+        </div>
+      ))
+    }
+    </>
   );
 }
 
